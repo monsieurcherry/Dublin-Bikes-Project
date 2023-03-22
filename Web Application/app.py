@@ -2,11 +2,9 @@ from flask import Flask, g, jsonify, render_template
 import sqlalchemy as sqla
 from sqlalchemy import create_engine
 import traceback
-from flask_cors import CORS
 import functools
 
 app = Flask(__name__)
-CORS(app)
 
 URI = "dbbikes.cfjfzkae45jy.eu-west-1.rds.amazonaws.com"
 PORT="3306"

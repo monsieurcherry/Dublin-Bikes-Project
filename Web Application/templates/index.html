@@ -6,13 +6,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>dbbikes</title>
     <link rel="stylesheet" href="../static/styles.css" />
+    <script src="https://kit.fontawesome.com/d4243df190.js" crossorigin="anonymous"></script>
 </head>
 <body>
     <div id="container">
         <div id="map">Map</div>
         <div id="graph">Graph</div>
         <div id="weather">Weather</div>
-        <div id="location_input">Location and Input</div>
+        <div id="location_input"><input type="text" id="current_loc" 
+            placeholder="Enter starting location...">
+            <input type="text" id="current_loc" 
+            placeholder="Enter destination...">
+        </div>
     </div>
 
 <script src = "https://maps.googleapis.com/maps/api/js?key=AIzaSyAyJ5pu1ozFV1DqfvwuJ-XQakAUDCm-dOc&callback=initMap" async defer></script>

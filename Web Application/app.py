@@ -59,13 +59,29 @@ def get_current_stations_info():
 
     except:
         print(traceback.format_exc())
-        return "error in get_stations", 404
+        return "error in current stations", 404
+
+@app.route("/currentweather")
+@functools.lru_cache(maxsize=128)
+def get_current_weather_info():
+    engine = get_db()
+    sql = "select * from currentweather;"
+    try:
+        with engine.connect() as conn:
+            rows = conn.execute(sqla.text(sql)).fetchall()
+            print('#found {} weather info', len(rows), rows)
+            return jsonify([row._asdict() for row in rows])
+
+
+    except:
+        print(traceback.format_exc())
+        return "error in current weather", 404
 
 
 
 @app.route("/")
-def display():
+def render():
     return render_template('index.html')
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5500)
+    app.run(debug=True, port=5000)

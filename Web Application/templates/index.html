@@ -7,20 +7,39 @@
     <title>dbbikes</title>
     <link rel="stylesheet" href="../static/styles.css" />
     <script src="https://kit.fontawesome.com/d4243df190.js" crossorigin="anonymous"></script>
+    <!-- <script src="http://maps.google.com/maps/api/js?sensor=true&libraries=places" type="text/javascript"></script> -->
 </head>
 <body>
     <div id="container">
         <div id="map">Map</div>
         <div id="graph">Graph</div>
         <div id="weather">Weather</div>
-        <div id="location_input"><input type="text" id="current_loc" 
-            placeholder="Enter starting location...">
-            <input type="text" id="current_loc" 
-            placeholder="Enter destination...">
+        <div id="location_input">
+        <form name="location search" action="/search" method="post">
+            <input type="text" class="autocomplete" id="starting_location" placeholder="Enter starting location...">
+            <label for="search starting location"><i class="fas fa-magnifying-glass"></i></label>
+            <br>
+            <br>
+            <input type="text" class="autocomplete" id="destination_location" placeholder="Enter destination...">
+            <label for="search destination location"><i class="fas fa-magnifying-glass"></i></label>
+        </form>
+        <div id="travel-mode">
+            <input type="radio" name="mode" id="travel-mode-walking" checked="checked" value="WALKING">
+            <label for="travel-mode-walking">Walking</label>
+
+            <input type="radio" name="mode" id="travel-mode-cycling" value="BICYCLING">
+            <label for="travel-mode-cycling">Cycling</label>
+
+            <input type="radio" name="mode" id="travel-mode-driving" value = "DRIVING">
+            <label for="travel-mode-driving">Driving</label>
+
+            <input type="radio" name="mode" id="travel-mode-transport" value="TRANSIT">
+            <label for="travel-mode-transport">Public Transport</label>
+        </div>
         </div>
     </div>
 
-<script src = "https://maps.googleapis.com/maps/api/js?key=AIzaSyAyJ5pu1ozFV1DqfvwuJ-XQakAUDCm-dOc&callback=initMap" async defer></script>
+<script src = "https://maps.googleapis.com/maps/api/js?key=AIzaSyAyJ5pu1ozFV1DqfvwuJ-XQakAUDCm-dOc&libraries=places&callback=initMap" async defer></script>
 <script src="../static/index.js"></script>
 </body>
 </html>

@@ -1,4 +1,6 @@
-var map;
+let map;
+let infowindow1;
+let service;
 function initMap()
 {   
     fetchCurrentInfo();
@@ -8,9 +10,11 @@ function initMap()
     {
         center: dublin , zoom: 13.5
     });
-    
+    routeMaker()
 };
-window.initMap = initMap();
+
+window.initMap = initMap;
+
 
 
 function addMarkers(stations, currentinfo) 
@@ -62,7 +66,7 @@ function addMarkers(stations, currentinfo)
             //the marker display's each station's available bikes count
             label: {text: availableBikes + '', color: "white"}, 
             icon: {url: icon},
-            optimized: false,
+            opacity: 0.5,
         });
 
         bike_marker.addListener("click", () => {
@@ -73,14 +77,15 @@ function addMarkers(stations, currentinfo)
             else {map.setZoom(map.getZoom())};
 
             map.panTo(bike_marker.getPosition());
-            
             infowindow.close();
             infowindow.setContent(
                 '<h1 style = "font-size: small">' + bike_marker.getTitle() + '</h1>' 
                 + contentStr);
             infowindow.open(bike_marker.getMap(), bike_marker);
+
+            bike_marker.setOpacity(1.0)
         });
-    });
+    })
 };
 
 function fetchCurrentInfo() {
@@ -101,7 +106,6 @@ function fetchCurrentInfo() {
         displayWeather(jsonData3)}
     );
 }
-
 fetchCurrentInfo()
 
 function displayWeather(weather_json){
@@ -121,6 +125,113 @@ function displayWeather(weather_json){
     + '<i class="fas fa-clock"></i>  ' + updatedTime; 
     document.getElementById("weather").innerHTML = toBeShown;
 }
+
+
+function routeMaker(){
+
+    // const travelmode = google.maps.TravelMode.DRIVING
+ 
+    const start_input  = document.getElementById("starting_location");
+    const start_searchItem = new google.maps.places.SearchBox(start_input);
+
+    const end_input  = document.getElementById("destination_location");
+    const end_searchItem = new google.maps.places.SearchBox(end_input);
+
+    const directionsRenderer = new google.maps.DirectionsRenderer();
+    const directionsService = new google.maps.DirectionsService();
+    directionsRenderer.setMap(map);
+    map.addListener("bounds_changed", ()=>{
+        start_searchItem.setBounds(map.getBounds());
+        end_searchItem.setBounds(map.getBounds());
+    });
+
+    end_searchItem.addListener("places_changed", ()=> {
+        const destinationPlace = end_searchItem.getPlaces();
+        
+        if(destinationPlace.length == 0){
+            return;
+        }
+        destinationPlace.forEach((destinationPlace) => {
+            if(!destinationPlace.geometry || !destinationPlace.geometry.location) {
+                console.log("Places contain no geometry...")
+                return;
+            }
+           
+        endmarker = new google.maps.Marker({
+                    map,
+                    title: destinationPlace.name,
+                    position: destinationPlace.geometry.location,
+                    opacity: 0,
+                })
+        });
+        map.setZoom(13)
+        map.panTo(endmarker.getPosition());
+        displayRoute(directionsService , directionsRenderer)
+    })
+
+    start_searchItem.addListener("places_changed", ()=> {
+        const startingPlace = start_searchItem.getPlaces();
+
+        if(startingPlace.length == 0){
+            return;
+        }
+        startingPlace.forEach((startingPlace) => {
+            if(!startingPlace.geometry || !startingPlace.geometry.location) {
+                console.log("Places contain no geometry...")
+                return;
+            }
+            
+            startmarker = new google.maps.Marker({
+                    map,
+                    title: startingPlace.name,
+                    position: startingPlace.geometry.location,
+                    opacity: 0,
+                })
+        });
+        map.setZoom(13)
+        map.panTo(startmarker.getPosition());
+        displayRoute( directionsService , directionsRenderer)
+    })
+
+    document.getElementById("travel-mode").addEventListener("change", () => {
+        displayRoute(directionsService, directionsRenderer);
+      });
+
+    function displayRoute( directionsService , directionsRenderer){
+        const selectedValue = document.querySelector('input[name="mode"]:checked').value; 
+        
+        if (selectedValue == "WALKING") {
+            travelmode = google.maps.TravelMode.WALKING;
+        }
+        if (selectedValue == "DRIVING") {
+            travelmode = google.maps.TravelMode.DRIVING;
+        }
+        if (selectedValue == "TRANSIT") {
+            travelmode = google.maps.TravelMode.TRANSIT;
+        }
+        if (selectedValue == "BICYCLING") {
+            travelmode = google.maps.TravelMode.BICYCLING;
+        }
+
+
+        directionsService.route({
+            origin: startmarker.getPosition(),
+            destination: endmarker.getPosition(),
+            travelMode: travelmode,
+        }).then((response) => {directionsRenderer.setDirections(response);
+        }).catch((error) => window.alert("Direction request failed: " + error));
+    }
+}
+
+
+
+
+
+
+
+
+
+
 
 
 

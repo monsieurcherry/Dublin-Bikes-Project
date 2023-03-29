@@ -3,6 +3,7 @@ import sqlalchemy as sqla
 from sqlalchemy import create_engine
 import traceback
 import functools
+import config
 
 app = Flask(__name__)
 
@@ -10,7 +11,7 @@ URI = "dbbikes.cfjfzkae45jy.eu-west-1.rds.amazonaws.com"
 PORT="3306"
 DB="dbbikes"
 USER="admin"
-PASSWORD = "mypassword"
+PASSWORD = config.DB_PASSWORD
 
 def connect_to_database():
     engine = create_engine("mysql+mysqlconnector://{}:{}@{}:{}/{}".format(USER, PASSWORD, URI, PORT, DB), echo=True)
@@ -37,8 +38,8 @@ def get_stations():
         with engine.connect() as conn:
             rows = conn.execute(sqla.text(sql)).fetchall()
             print('#found {} stations', len(rows), rows)
+            conn.close()
             return jsonify([row._asdict() for row in rows])
-
 
     except:
         print(traceback.format_exc())
@@ -54,6 +55,7 @@ def get_current_stations_info():
         with engine.connect() as conn:
             rows = conn.execute(sqla.text(sql)).fetchall()
             print('#found {} stations', len(rows), rows)
+            conn.close()
             return jsonify([row._asdict() for row in rows])
 
 
@@ -70,6 +72,7 @@ def get_current_weather_info():
         with engine.connect() as conn:
             rows = conn.execute(sqla.text(sql)).fetchall()
             print('#found {} weather info', len(rows), rows)
+            conn.close()
             return jsonify([row._asdict() for row in rows])
 
 
@@ -77,11 +80,11 @@ def get_current_weather_info():
         print(traceback.format_exc())
         return "error in current weather", 404
 
-
-
 @app.route("/")
 def render():
     return render_template('index.html')
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5000)
+    app.run(debug=True, port=5500)
+
+# debug=True restarts flask whenever app.py is modified

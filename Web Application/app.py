@@ -80,6 +80,7 @@ def get_current_weather_info():
         print(traceback.format_exc())
         return "error in current weather", 404
 
+
 @app.route("/")
 def render():
     return render_template('index.html')

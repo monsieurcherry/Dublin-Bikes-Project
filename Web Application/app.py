@@ -33,7 +33,7 @@ def close_connection(exception):
 @functools.lru_cache(maxsize=128)
 def get_stations():
     engine = get_db()
-    sql = "select * from station ;"
+    sql = "select * from station;"
     try:
         with engine.connect() as conn:
             rows = conn.execute(sqla.text(sql)).fetchall()
@@ -50,7 +50,7 @@ def get_stations():
 @functools.lru_cache(maxsize=128)
 def get_current_stations_info():
     engine = get_db()
-    sql = "select * from currentavailability ;"
+    sql = "select * from currentavailability;"
     try:
         with engine.connect() as conn:
             rows = conn.execute(sqla.text(sql)).fetchall()
@@ -87,5 +87,3 @@ def render():
 
 if __name__ == "__main__":
     app.run(debug=True, port=5500)
-
-# debug=True restarts flask whenever app.py is modified

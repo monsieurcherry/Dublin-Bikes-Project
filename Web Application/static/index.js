@@ -162,27 +162,24 @@ function endStationSelector(){
 function routeMaker(){
     const start_input  = document.getElementById("starting_location");
     const end_input  = document.getElementById("destination_location");
-    let directionsRenderer = new google.maps.DirectionsRenderer();
-    let directionsService = new google.maps.DirectionsService();
+    const directionsRenderer = new google.maps.DirectionsRenderer();
+    const directionsService = new google.maps.DirectionsService();
     directionsRenderer.setMap(map);
 
     if(startflag == true){
         document.getElementById("starting_location").value = startingStationName
         startflag = false
-        
     }
+
     if(endflag == true){
         document.getElementById("destination_location").value = endStationName;
-        directionsRenderer.setMap(map)
         displayRouteAutofill(directionsService , directionsRenderer)
         endflag = false
-
     }
 
     start_input.addEventListener("onfocus", () => {
         try {displayRouteAutofill(directionsService , directionsRenderer)}
         catch(err){window.alert("You must select a start station and then an end station.")}  
-        
     })
 
     end_input.addEventListener("onfocus", () => {

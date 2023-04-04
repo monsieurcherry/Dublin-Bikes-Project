@@ -4,6 +4,8 @@ from sqlalchemy import create_engine
 import traceback
 import functools
 import config
+import pandas as pd
+from json import loads, dumps
 
 app = Flask(__name__)
 
@@ -74,12 +76,36 @@ def get_current_weather_info():
             print('#found {} weather info', len(rows), rows)
             conn.close()
             return jsonify([row._asdict() for row in rows])
-
-
     except:
         print(traceback.format_exc())
         return "error in current weather", 404
 
+
+
+@app.route("/station_avg_data/<int:station_id>")
+@functools.lru_cache(maxsize=128)
+def station_avg_data(station_id):
+    engine = get_db()
+    try:
+        with engine.connect() as connection:
+            df = pd.read_sql_table("availability", connection)
+            print(df)
+            df = df[df['number'] == station_id]
+            df = df.drop_duplicates(keep='first')
+            df['last_update'] = pd.to_datetime(df['last_update'])
+            df = df.set_index('last_update')
+            df = df.resample('10T').mean()
+            df = df.groupby(df.index.hour).mean()
+            result = df['available_bikes'].to_json(orient="split")
+            parsed = loads(result)
+            # connection.close()
+            return dumps(parsed, indent=4)
+
+    except:
+        print(traceback.format_exc())
+        return "error in station availability", 404
+    
+    
 
 @app.route("/")
 def render():

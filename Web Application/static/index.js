@@ -50,7 +50,7 @@ function addMarkers(stations, currentinfo)
                 lng: station.position_lng
             },
             map: map,
-            title: station.name + ' Station No.' + station.number,
+            title: station.name + ' Station No.  ' + station.number,
             //the marker display's each station's available bikes count
             label: {text: availableBikes + '', color: "white"}, 
             icon: {url: blue_icon},
@@ -59,6 +59,11 @@ function addMarkers(stations, currentinfo)
         bikeMarkers.push(bike_marker);
         
         bike_marker.addListener("click", () => {
+            
+            stationNumber = parseInt(bike_marker.getTitle().slice(bike_marker.getTitle().length - 3, bike_marker.getTitle().length))
+            stationAvgOccupancyGetter(stationNumber)
+            console.log({stationNumber})
+            
             if(startflag == true){
                 startingStationPosition = []
                 startingStationPosition.push(bike_marker.getPosition().lat())
@@ -72,6 +77,7 @@ function addMarkers(stations, currentinfo)
                 endStationPosition.push(bike_marker.getPosition().lat())
                 endStationPosition.push(bike_marker.getPosition().lng())
                 endStationName = (bike_marker.getTitle())
+                console.log({endStationName})
                 routeMaker()
             }
 
@@ -86,7 +92,19 @@ function addMarkers(stations, currentinfo)
                 '<h1 style = "font-size: small">' + bike_marker.getTitle() + '</h1>' 
                 + contentStr);
             if(startflag == false && endflag == false){infowindow.open(bike_marker.getMap(), bike_marker)}
+        })
+        
+        bike_marker.addListener("mouseover", () => {
+            infowindow.close();
+            infowindow.setContent(
+                '<h1 style = "font-size: small">' + bike_marker.getTitle() + '</h1>' 
+                + contentStr);
+            if(startflag == false && endflag == false){infowindow.open(bike_marker.getMap(), bike_marker)}
         });
+
+        if (startflag == true || endflag == true) {bike_marker.addListener("mouseout", () => {
+            infowindow.close();
+        })}
     })
 };
 
@@ -94,7 +112,8 @@ function fetchCurrentInfo() {
     const static_stations_info_url = '/stations';           //need to fetch the stations json
     const current_station_info_url = '/currentstations';    //then also need to fetch the current station information json
     const current_weather_info_url = '/currentweather';
-    const current_weather_icon = 'https://api.openweathermap.org/data/2.5/weather?lat=53.35&lon=-6.26&appid=b7d6a55bc0fff59fb0d5f7c3c1668417&units=metric';
+    const current_weather_icon = 
+'https://api.openweathermap.org/data/2.5/weather?lat=53.35&lon=-6.26&appid=b7d6a55bc0fff59fb0d5f7c3c1668417&units=metric';
 
 
     const request1 = fetch(static_stations_info_url).then(response => response.json());
@@ -164,8 +183,7 @@ function routeMaker(){
     const end_input  = document.getElementById("destination_location");
     const directionsRenderer = new google.maps.DirectionsRenderer();
     const directionsService = new google.maps.DirectionsService();
-    directionsRenderer.setMap(map);
-
+    
     if(startflag == true){
         document.getElementById("starting_location").value = startingStationName
         startflag = false
@@ -177,22 +195,11 @@ function routeMaker(){
         endflag = false
     }
 
-    start_input.addEventListener("onfocus", () => {
-        try {displayRouteAutofill(directionsService , directionsRenderer)}
-        catch(err){window.alert("You must select a start station and then an end station.")}  
-    })
-
-    end_input.addEventListener("onfocus", () => {
-        try{
-        displayRouteAutofill(directionsService , directionsRenderer)}
-        catch(error){window.alert("You must select a start station and then an end station.")}
-    })
-
     const start_searchItem = new google.maps.places.SearchBox(start_input);
     const end_searchItem = new google.maps.places.SearchBox(end_input);
 
-    
-    
+    directionsRenderer.setMap(map);
+
     map.addListener("bounds_changed", ()=>{
         start_searchItem.setBounds(map.getBounds());
         end_searchItem.setBounds(map.getBounds());
@@ -283,53 +290,43 @@ function routeMaker(){
     }
 }
 
-hours = []
-occupancy = []
-for (let i = 0; i<24; i++){
-    hours.push(i);
-    occupancy.push(Math.sin(i)+2)
+function stationAvgOccupancyGetter(station_id){
+    const stations_data_getter_url = '/station_avg_data/' + station_id;           
+    const request1 = fetch(stations_data_getter_url).then(response => response.json());
+    return Promise.all([request1]).then(data => {
+        const jsonData1 = data[0];
+        stationDataProcessor(jsonData1);}
+    )
 }
 
-const ctx = document.getElementById('myDailyChart');
+var charFlag = false;
+function stationDataProcessor(jsonData){
 
-new Chart(ctx, {
-type: 'line',
-data: {
-labels: hours,
-datasets: [{
-    label: 'Daily Bike Availability',
-    data: occupancy,
-}]
-},
-options: {
-scales: {
-    y: {
-    beginAtZero: true
-    }
-}
-}
-});
+    timeList = jsonData.index
+    dailyAvgOccupancy = jsonData.data
+    let DailyAvg;
+    const ctx = document.getElementById('myDailyChart');
 
-const ctx2 = document.getElementById('myWeeklyChart');
+    if (charFlag == false){
 
-new Chart(ctx2, {
-type: 'line',
-data: {
-labels: hours,
-datasets: [{
-    label: 'Weekly Bike Availability',
-    data: occupancy,
-}]
-},
-options: {
-scales: {
-    y: {
-    beginAtZero: true
-    }
-}
-}
-});
+    DailyAvg = new Chart(ctx, {
+    type: 'line',
+    data: {
+    labels: timeList,
+    datasets: [{
+        label: 'Daily Bike Availability At This Station',
+        data: dailyAvgOccupancy,
+    }]
+    },
+    options: {
+    scales: {
+    }}});
+    charFlag = true;}
 
+    if (charFlag == true ){
+        DailyAvg.destroy();
+        charFlag = false} 
+}
 
 
 

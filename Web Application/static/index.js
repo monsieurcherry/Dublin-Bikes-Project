@@ -15,7 +15,6 @@ function initMap()
     routeMaker();
 };
 window.initMap = initMap;
-// stationDataPreloader();
 
 function addMarkers(stations, currentinfo) 
 {   
@@ -290,15 +289,6 @@ function routeMaker(){
     }
 }
 
-// function stationDataPreloader(){
-//     for (i = 0; i < 2; i++){
-//         const station_url = '/station_avg_data/' + i
-//         const request = fetch(station_url).then(response => {}).then(data => {
-//             console.log("Station " + i + " initialized.")
-//         })
-//     }
-// }
-
 function stationAvgOccupancyGetter(station_id){
     const stations_data_getter_url = '/station_avg_data/' + station_id;           
     const request1 = fetch(stations_data_getter_url).then(response => response.json())
@@ -346,6 +336,7 @@ async function stationDataProcessor(jsonData, station_id){
 );
 }}
 
+//load a default station at the start
 stationAvgOccupancyGetter(1);
 
 

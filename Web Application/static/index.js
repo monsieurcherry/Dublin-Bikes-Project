@@ -15,6 +15,7 @@ function initMap()
     routeMaker();
 };
 window.initMap = initMap;
+// stationDataPreloader();
 
 function addMarkers(stations, currentinfo) 
 {   
@@ -62,8 +63,7 @@ function addMarkers(stations, currentinfo)
             
             stationNumber = parseInt(bike_marker.getTitle().slice(bike_marker.getTitle().length - 3, bike_marker.getTitle().length))
             stationAvgOccupancyGetter(stationNumber)
-            console.log({stationNumber})
-            
+    
             if(startflag == true){
                 startingStationPosition = []
                 startingStationPosition.push(bike_marker.getPosition().lat())
@@ -290,44 +290,63 @@ function routeMaker(){
     }
 }
 
+// function stationDataPreloader(){
+//     for (i = 0; i < 2; i++){
+//         const station_url = '/station_avg_data/' + i
+//         const request = fetch(station_url).then(response => {}).then(data => {
+//             console.log("Station " + i + " initialized.")
+//         })
+//     }
+// }
+
 function stationAvgOccupancyGetter(station_id){
     const stations_data_getter_url = '/station_avg_data/' + station_id;           
-    const request1 = fetch(stations_data_getter_url).then(response => response.json());
-    return Promise.all([request1]).then(data => {
-        const jsonData1 = data[0];
-        stationDataProcessor(jsonData1);}
-    )
+    const request1 = fetch(stations_data_getter_url).then(response => response.json())
+    .then(data => {
+        const jsonData1 = data;
+        stationDataProcessor(jsonData1, station_id);}
+    )    
 }
 
 var charFlag = false;
-function stationDataProcessor(jsonData){
+var dummyCounter = 0
 
-    timeList = jsonData.index
-    dailyAvgOccupancy = jsonData.data
-    let DailyAvg;
-    const ctx = document.getElementById('myDailyChart');
+async function stationDataProcessor(jsonData, station_id){
+    dummyCounter ++; 
+    let timeList = await jsonData.index
+    let dailyAvgOccupancy = await jsonData.data
+    document.getElementById('graph1').innerHTML = '<canvas id="myDailyChart' + dummyCounter + '" style="width: 480px; height: 150px">Graph daily</canvas>';
 
-    if (charFlag == false){
+    GraphDrawer();
+
+    async function GraphDrawer()
+    { const chartid = 'myDailyChart' + dummyCounter
+    const ctx = document.getElementById(chartid); 
 
     DailyAvg = new Chart(ctx, {
     type: 'line',
     data: {
     labels: timeList,
     datasets: [{
-        label: 'Daily Bike Availability At This Station',
+        label: 'Average Daily Bike Availability At Station ' + station_id,
         data: dailyAvgOccupancy,
+        fill: true,
+        
     }]
     },
     options: {
+        tension: 0.1,
     scales: {
-    }}});
-    charFlag = true;}
-
-    if (charFlag == true ){
-        DailyAvg.destroy();
-        charFlag = false} 
+        y: {
+            min: 0
+        }
+    }
 }
+}
+);
+}}
 
+stationAvgOccupancyGetter(1);
 
 
 

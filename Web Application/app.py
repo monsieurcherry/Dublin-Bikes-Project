@@ -39,7 +39,7 @@ def get_stations():
     try:
         with engine.connect() as conn:
             rows = conn.execute(sqla.text(sql)).fetchall()
-            print('#found {} stations', len(rows), rows)
+            # print('#found {} stations', len(rows), rows)
             conn.close()
             return jsonify([row._asdict() for row in rows])
 
@@ -56,7 +56,7 @@ def get_current_stations_info():
     try:
         with engine.connect() as conn:
             rows = conn.execute(sqla.text(sql)).fetchall()
-            print('#found {} stations', len(rows), rows)
+            # print('#found {} stations', len(rows), rows)
             conn.close()
             return jsonify([row._asdict() for row in rows])
 
@@ -73,33 +73,44 @@ def get_current_weather_info():
     try:
         with engine.connect() as conn:
             rows = conn.execute(sqla.text(sql)).fetchall()
-            print('#found {} weather info', len(rows), rows)
+            # print('#found {} weather info', len(rows), rows)
             conn.close()
             return jsonify([row._asdict() for row in rows])
     except:
         print(traceback.format_exc())
         return "error in current weather", 404
 
+df_global = None
 
+@app.before_first_request
+def DataGetter():
+    engine = get_db()
+    try:
+        with engine.connect() as connection:
+            global df_global
+            df_global = pd.read_sql_table("availability", connection)
+            print(df_global.head)
+            connection.close()
+            return #df_global
+    except:
+        print("Unable to get availability data for data analysis")
 
 @app.route("/station_avg_data/<int:station_id>")
 @functools.lru_cache(maxsize=128)
 def station_avg_data(station_id):
-    engine = get_db()
+    global df_global
+    df = df_global
     try:
-        with engine.connect() as connection:
-            df = pd.read_sql_table("availability", connection)
-            print(df)
-            df = df[df['number'] == station_id]
-            df = df.drop_duplicates(keep='first')
-            df['last_update'] = pd.to_datetime(df['last_update'])
-            df = df.set_index('last_update')
-            df = df.resample('10T').mean()
-            df = df.groupby(df.index.hour).mean()
-            result = df['available_bikes'].to_json(orient="split")
-            parsed = loads(result)
-            # connection.close()
-            return dumps(parsed, indent=4)
+        print(df.head())
+        df = df[df['number'] == station_id]
+        df = df.drop_duplicates(keep='first')
+        df['last_update'] = pd.to_datetime(df['last_update'])
+        df = df.set_index('last_update')
+        df = df.resample('10T').mean()
+        df = df.groupby(df.index.hour).mean()
+        result = df['available_bikes'].to_json(orient="split")
+        parsed = loads(result)
+        return dumps(parsed, indent=4)
 
     except:
         print(traceback.format_exc())
@@ -112,4 +123,4 @@ def render():
     return render_template('index.html')
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5500)
+    app.run(debug=True, port=5100)

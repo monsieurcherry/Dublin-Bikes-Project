@@ -156,10 +156,9 @@ function displayWeather(weather_json){
     const description = weather_data.description;
     const updatedTime = weather_data.time;
     const pressure = weather_data.pressure;
-    var toBeShown = '<img src = "https://openweathermap.org/img/wn/' + iconid + '@4x.png" style="width:64px;height:64px;"><p>' + description + '</p>'
-    + '<br>  <i class="fas fa-temperature-half"></i> ' + space + space + space + temperature + '°C'
-    + ' <br> <i class="fas fa-wind"></i>' + space + space + windSpeed 
-    + ' m/s<br>'
+    var toBeShown = '<img src = "https://openweathermap.org/img/wn/' + iconid + '@2x.png">' +
+                '<div id = "weather-temperature"> ' + temperature + '°C </div>' + 
+                '<p id = "wind-speed"><i class="fas fa-wind"></i>' +  windSpeed + 'm/s </p>'
     document.getElementById("weather-data").innerHTML = toBeShown;
 }
 
@@ -316,11 +315,10 @@ async function stationDataProcessor(jsonData, station_id, stationStands){
     dummyCounter ++; 
     let timeList = await jsonData.index
     let dailyAvgOccupancy = await jsonData.data
-    document.getElementById('graph1').innerHTML = '<canvas id="myDailyChart' + dummyCounter + '" style="width: 480px; height: 200px">Graph daily</canvas>';
+    document.getElementById('graph1').innerHTML = '<canvas id="myDailyChart' + dummyCounter + '" style="width: 450px; height: 200px">Graph daily</canvas>';
 
     GraphDrawer(stationStands);
 
-    // console.log({stationStands})
     async function GraphDrawer(stationStands)
     { 
     

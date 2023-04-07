@@ -39,11 +39,18 @@
         </div>
         <div id="location_input">
             <form name="location search" action="/search" method="post">
-                <input type="text" style="width: 300px;" class="autocomplete" id="starting_location" placeholder="Enter starting location or Click on a station..." onfocus = "startStationSelector()">
-                <br>
-                <br>
-                <br>
-                <input type="text" style="width: 300px;" class="autocomplete" id="destination_location" placeholder="Enter destination or Click on a station..." onfocus = "endStationSelector()">
+                <input type="text" style="width: 100%;" class="autocomplete" id="starting_location" placeholder="Enter starting location or Click on a station..." onfocus = "startStationSelector()">
+                
+                <select id="pick-a-day" name="pick-date">
+                    <option value="avg" id="day-0" >Pick a day</option>
+                    <option value="0" id="day-1" >Today</option>
+                    <option value="1" id="day-2" >Day1</option>
+                    <option value="2" id="day-3" >Day2</option>
+                    <option value="3" id="day-4" >Day3</option>
+                    <option value="4" id="day-5" >Day4</option>
+                </select>
+                
+                <input type="text" style="width: 100%;" class="autocomplete" id="destination_location" placeholder="Enter destination or Click on a station..." onfocus = "endStationSelector()">
             </form>
             <div id="travel-mode">
                 <div class = "radio-icon">

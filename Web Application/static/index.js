@@ -62,10 +62,12 @@ function addMarkers(stations, currentinfo)
         bikeMarkers.push(bike_marker);
         
         bike_marker.addListener("click", () => {
-            
+            let chosenDay = document.getElementById('pick-a-day').value;
+            console.log({chosenDay})
             stationNumber = parseInt(bike_marker.getTitle().slice(bike_marker.getTitle().length - 3, bike_marker.getTitle().length))
-            stationAvgOccupancyGetter(stationNumber, totalStand)
-            console.log(infowindow.getContent())
+            if (chosenDay == 'avg'){stationAvgOccupancyGetter(stationNumber, totalStand)}
+            else {predictiveModelResultGetter(stationNumber, parseInt(chosenDay), totalStand)}
+            console.log(chosenDay)
             if(startflag == true){
                 startingStationPosition = []
                 startingStationPosition.push(bike_marker.getPosition().lat())
@@ -152,13 +154,27 @@ function displayWeather(weather_json){
     const space = '&nbsp'
     const temperature = weather_data.temperature;
     const windSpeed = weather_data.windspeed;
-    const cloudiness = weather_data.cloudiness;
-    const description = weather_data.description;
+    // const cloudiness = weather_data.cloudiness;
+    // const description = weather_data.description;
     const updatedTime = weather_data.time;
-    const pressure = weather_data.pressure;
+    
+    weekDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+    let today = 0;
+    for (i = 0; i < 7; i++){
+        if (weekDays[i] == updatedTime.slice(0,3)){
+            today = i
+        }
+    }
+    
+    document.getElementById('day-2').innerHTML = weekDays[(today+1)%7]
+    document.getElementById('day-3').innerHTML = weekDays[(today+2)%7]
+    document.getElementById('day-4').innerHTML = weekDays[(today+3)%7]
+    document.getElementById('day-5').innerHTML = weekDays[(today+4)%7]
+
+    // const pressure = weather_data.pressure;
     var toBeShown = '<img src = "https://openweathermap.org/img/wn/' + iconid + '@2x.png">' +
                 '<div id = "weather-temperature"> ' + temperature + '°C </div>' + 
-                '<p id = "wind-speed"><i class="fas fa-wind"></i>' +  windSpeed + 'm/s </p>'
+                '<p id = "wind-speed"><i class="fas fa-wind"></i>' + space + windSpeed + 'm/s </p>'
     document.getElementById("weather-data").innerHTML = toBeShown;
 }
 
@@ -225,10 +241,10 @@ function routeMaker(){
                     map,
                     title: startingPlace.name,
                     position: startingPlace.geometry.location,
-                    opacity: 0,
+                    opacity: 1,
                 })
         });
-        map.setZoom(13)
+        map.setZoom(15)
         map.panTo(startmarker.getPosition());
         displayRoute(directionsService , directionsRenderer)
     })
@@ -250,10 +266,10 @@ function routeMaker(){
                     map,
                     title: destinationPlace.name,
                     position: destinationPlace.geometry.location,
-                    opacity: 0,
+                    opacity: 1,
                 })
         });
-        map.setZoom(13)
+        map.setZoom(15)
         map.panTo(endmarker.getPosition());
         displayRoute(directionsService , directionsRenderer)
     })
@@ -304,18 +320,17 @@ function stationAvgOccupancyGetter(station_id, stationStands){
     const request1 = fetch(stations_data_getter_url).then(response => response.json())
     .then(data => {
         const jsonData1 = data;
-        stationDataProcessor(jsonData1, station_id, stationStands);}
+        stationAvgOccupancyProcessor(jsonData1, station_id, stationStands);}
     )    
 }
 
-var charFlag = false;
-var dummyCounter = 0
 
-async function stationDataProcessor(jsonData, station_id, stationStands){
+var dummyCounter = 0
+async function stationAvgOccupancyProcessor(jsonData, station_id, stationStands){
     dummyCounter ++; 
     let timeList = await jsonData.index
     let dailyAvgOccupancy = await jsonData.data
-    document.getElementById('graph1').innerHTML = '<canvas id="myDailyChart' + dummyCounter + '" style="width: 450px; height: 200px">Graph daily</canvas>';
+    document.getElementById('graph1').innerHTML = '<canvas id="myDailyChart' + dummyCounter + '" style="width: 100%; height: 100%">Graph daily</canvas>';
 
     GraphDrawer(stationStands);
 
@@ -371,13 +386,75 @@ async function stationDataProcessor(jsonData, station_id, stationStands){
 //load a default station at the start
 stationAvgOccupancyGetter(1,31);
 
+function predictiveModelResultGetter(station_id, days_from_today, totalStands){
+    const stations_data_ml = '/predicted_occupancy/' + station_id + '&' + days_from_today;        
+    const request1 = fetch(stations_data_ml).then(response => response.json())
+    .then(data => {
+        const jsonData1 = data;
+        console.log("Predictive model results data", jsonData1.index)
+        stationPredictedOccupancyProcessor(jsonData1, station_id, totalStands);
+    }
+    )
+}
 
 
+let dummyCounter2 = 0;
+async function stationPredictedOccupancyProcessor(jsonData, station_id, stationStands){
+    dummyCounter2 ++; 
+    let timeList = await jsonData.index
+    let dailyAvgOccupancy = await jsonData.data
+    document.getElementById('graph1').innerHTML = '<canvas id="myDailyChart' + dummyCounter + '" style="width: 100%; height: 100%">Graph daily</canvas>';
 
+    GraphDrawer(stationStands);
 
+    async function GraphDrawer(stationStands)
+    { 
+    
+    const chartid = 'myDailyChart' + dummyCounter
 
-
-
+    const ctx = document.getElementById(chartid).getContext("2d"); 
+    
+    const gradient = ctx.createLinearGradient(0, 0, 0, 200);
+        gradient.addColorStop(0, "rgba(0, 255, 243, 0.85)");   
+        gradient.addColorStop(1, "rgba(0, 255, 243, 0.10)");
+    
+    let selectElement = document.getElementById('pick-a-day')
+    let chosenDay = selectElement.options[selectElement.selectedIndex].innerHTML;
+    DailyAvg = new Chart(ctx, {
+    type: 'line',
+    data: {
+    labels: timeList,
+    datasets: [{
+        label: 'Expected Daily Occupancy at Station ' + station_id + ' on ' + chosenDay,
+        labelColor: '#fff',
+        data: dailyAvgOccupancy,
+        fill: true,
+        backgroundColor: gradient,
+        }]
+    },
+    options: {
+        tension: 0.1,
+        
+       
+    scales: {
+        x: {
+            ticks: {
+                color: "#fff"
+              },
+            
+        },
+        y: {
+            min: 0,
+            max: stationStands,
+            ticks: {
+                color: "#fff"
+              }
+        }
+    }
+}
+}
+);
+}}
 
 
 

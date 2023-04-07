@@ -23,11 +23,14 @@ function addMarkers(stations, currentinfo)
 
         var availableBikes = '';
         var contentStr = '';
+        var totalStand = '';
+    
         const blue_icon = "https://images2.imgbox.com/8b/64/Twifkt4W_o.png"
         const space = '&nbsp'
         currentinfo.forEach(stn=>{
             if (stn.number == station.number){
                 availableBikes = stn.available_bikes;
+                totalStand = availableBikes + stn.available_bike_stands
                 var bike_icon;
                 var parking_icon;
                 if (stn.available_bikes == 0){bike_icon = "<i class='fas fa-person-biking' style = 'color:red'></i>"}
@@ -36,8 +39,8 @@ function addMarkers(stations, currentinfo)
                 if (stn.available_bike_stands == 0){parking_icon = "<i class='fas fa-square-parking' style = 'color:red'></i>"}
                 else {parking_icon = "<i class='fas fa-square-parking' style = 'color:navy'></i>"};
 
-                contentStr += "<p> Available bikes &nbsp &nbsp" + bike_icon + space + space + stn.available_bikes +
-                "</p><p> Available stands &nbsp" + parking_icon + space + space + stn.available_bike_stands + '</p>';
+                contentStr += "<p style = 'color: #000'> Available bikes &nbsp &nbsp" + bike_icon + space + space + stn.available_bikes +
+                "</p><p style = 'color: #000'> Available stands &nbsp" + parking_icon + space + space + stn.available_bike_stands + '</p>';
                 
                 //if a station has 0 available bikes, it shows red marker
                 //if its between 1 and 5, the marker is orange
@@ -61,14 +64,14 @@ function addMarkers(stations, currentinfo)
         bike_marker.addListener("click", () => {
             
             stationNumber = parseInt(bike_marker.getTitle().slice(bike_marker.getTitle().length - 3, bike_marker.getTitle().length))
-            stationAvgOccupancyGetter(stationNumber)
-    
+            stationAvgOccupancyGetter(stationNumber, totalStand)
+            console.log(infowindow.getContent())
             if(startflag == true){
                 startingStationPosition = []
                 startingStationPosition.push(bike_marker.getPosition().lat())
                 startingStationPosition.push(bike_marker.getPosition().lng())
                 startingStationName = (bike_marker.getTitle())
-                console.log({startingStationName})
+                // console.log({startingStationName})
                 routeMaker()
                 
             } else if (endflag == true) {
@@ -76,7 +79,7 @@ function addMarkers(stations, currentinfo)
                 endStationPosition.push(bike_marker.getPosition().lat())
                 endStationPosition.push(bike_marker.getPosition().lng())
                 endStationName = (bike_marker.getTitle())
-                console.log({endStationName})
+                // console.log({endStationName})
                 routeMaker()
             }
 
@@ -88,20 +91,24 @@ function addMarkers(stations, currentinfo)
             map.panTo(bike_marker.getPosition());
             infowindow.close();
             infowindow.setContent(
-                '<h1 style = "font-size: small">' + bike_marker.getTitle() + '</h1>' 
+                '<h1 style = "font-size: small; color: #000">' + bike_marker.getTitle() + '</h1>' 
                 + contentStr);
+            infowindow.open();
+            
             if(startflag == false && endflag == false){infowindow.open(bike_marker.getMap(), bike_marker)}
         })
         
         bike_marker.addListener("mouseover", () => {
+            if (map.getZoom() > 14.9){
             infowindow.close();
             infowindow.setContent(
-                '<h1 style = "font-size: small">' + bike_marker.getTitle() + '</h1>' 
+                '<h1 style = "font-size: small; color: #000">' + bike_marker.getTitle() + '</h1>' 
                 + contentStr);
-            if(startflag == false && endflag == false){infowindow.open(bike_marker.getMap(), bike_marker)}
+            
+            if(startflag == false && endflag == false){infowindow.open(bike_marker.getMap(), bike_marker)}}
         });
 
-        if (startflag == true || endflag == true) {bike_marker.addListener("mouseout", () => {
+        if (startflag == true || endflag == false) {bike_marker.addListener("mouseout", () => {
             infowindow.close();
         })}
     })
@@ -149,13 +156,11 @@ function displayWeather(weather_json){
     const description = weather_data.description;
     const updatedTime = weather_data.time;
     const pressure = weather_data.pressure;
-    var toBeShown = '<p><img src = "https://openweathermap.org/img/wn/' + iconid + '@2x.png" style="width:28px;height:28px;">' + description + '</p>'
-    + '<br> <i class="fas fa-cloud"></i>' + space + space + cloudiness 
-    + ' % cloudy <br>  <i class="fas fa-temperature-half"></i> ' + space + space + space + temperature + '°C'
+    var toBeShown = '<img src = "https://openweathermap.org/img/wn/' + iconid + '@4x.png" style="width:64px;height:64px;"><p>' + description + '</p>'
+    + '<br>  <i class="fas fa-temperature-half"></i> ' + space + space + space + temperature + '°C'
     + ' <br> <i class="fas fa-wind"></i>' + space + space + windSpeed 
-    + ' m/s<br> <i class="fas fa-arrows-down-to-people"></i> ' + space + pressure + ' hPa <br>'
-    + '<i class="fas fa-clock"></i>  ' + updatedTime; 
-    document.getElementById("weather").innerHTML = toBeShown;
+    + ' m/s<br>'
+    document.getElementById("weather-data").innerHTML = toBeShown;
 }
 
 let startingStationPosition = []
@@ -164,17 +169,16 @@ let startingStationName;
 let endStationName;
 let startflag = false
 let endflag = false
+let directionsArray = [];
 
 function startStationSelector(){
     startflag = true
-    endflag = false
-    
+    endflag = false    
 }
 
 function endStationSelector(){
     endflag = true
-    startflag = false
-    
+    startflag = false    
 }
 
 function routeMaker(){
@@ -182,7 +186,10 @@ function routeMaker(){
     const end_input  = document.getElementById("destination_location");
     const directionsRenderer = new google.maps.DirectionsRenderer();
     const directionsService = new google.maps.DirectionsService();
-    
+
+    const start_searchItem = new google.maps.places.SearchBox(start_input);
+    const end_searchItem = new google.maps.places.SearchBox(end_input);
+
     if(startflag == true){
         document.getElementById("starting_location").value = startingStationName
         startflag = false
@@ -191,11 +198,10 @@ function routeMaker(){
     if(endflag == true){
         document.getElementById("destination_location").value = endStationName;
         displayRouteAutofill(directionsService , directionsRenderer)
+        console.log(directionsArray)
         endflag = false
     }
 
-    const start_searchItem = new google.maps.places.SearchBox(start_input);
-    const end_searchItem = new google.maps.places.SearchBox(end_input);
 
     directionsRenderer.setMap(map);
 
@@ -203,30 +209,6 @@ function routeMaker(){
         start_searchItem.setBounds(map.getBounds());
         end_searchItem.setBounds(map.getBounds());
     });
-
-    end_searchItem.addListener("places_changed", ()=> {
-        const destinationPlace = end_searchItem.getPlaces();
-        
-        if(destinationPlace.length == 0){
-            return;
-        }
-        destinationPlace.forEach((destinationPlace) => {
-            if(!destinationPlace.geometry || !destinationPlace.geometry.location) {
-                console.log("Places contain no geometry...")
-                return;
-            }
-           
-        endmarker = new google.maps.Marker({
-                    map,
-                    title: destinationPlace.name,
-                    position: destinationPlace.geometry.location,
-                    opacity: 0,
-                })
-        });
-        map.setZoom(13)
-        map.panTo(endmarker.getPosition());
-        displayRoute(directionsService , directionsRenderer)
-    })
 
     start_searchItem.addListener("places_changed", ()=> {
         const startingPlace = start_searchItem.getPlaces();
@@ -249,7 +231,32 @@ function routeMaker(){
         });
         map.setZoom(13)
         map.panTo(startmarker.getPosition());
-        displayRoute( directionsService , directionsRenderer)
+        displayRoute(directionsService , directionsRenderer)
+    })
+
+    end_searchItem.addListener("places_changed", ()=> {
+        console.log({end_searchItem})
+        const destinationPlace = end_searchItem.getPlaces();
+        
+        if(destinationPlace.length == 0){
+            return;
+        }
+        destinationPlace.forEach((destinationPlace) => {
+            if(!destinationPlace.geometry || !destinationPlace.geometry.location) {
+                console.log("Places contain no geometry...")
+                return;
+            }
+           
+        endmarker = new google.maps.Marker({
+                    map,
+                    title: destinationPlace.name,
+                    position: destinationPlace.geometry.location,
+                    opacity: 0,
+                })
+        });
+        map.setZoom(13)
+        map.panTo(endmarker.getPosition());
+        displayRoute(directionsService , directionsRenderer)
     })
 
     document.getElementById("travel-mode").addEventListener("change", () => {
@@ -279,56 +286,83 @@ function routeMaker(){
         }).catch((error) => window.alert("Direction request failed: " + error));
     }
 
-    function displayRouteAutofill( directionsService , directionsRenderer){
+    function displayRouteAutofill(directionsService , directionsRenderer){
+        if (directionsArray.length != 0){directionsArray.forEach(route => {
+            route.setMap(null)
+        })}
+
         directionsService.route({
             origin: {lat: startingStationPosition[0], lng: startingStationPosition[1]},
             destination: {lat: endStationPosition[0] ,lng: endStationPosition[1]},
             travelMode: google.maps.TravelMode.BICYCLING,
         }).then((response) => {directionsRenderer.setDirections(response);
-        }).catch((error) => window.alert("Direction request failed: " + error));
+        directionsArray.push(directionsRenderer)}).catch((error) => window.alert("Direction request failed: " + error));
     }
 }
 
-function stationAvgOccupancyGetter(station_id){
+function stationAvgOccupancyGetter(station_id, stationStands){
     const stations_data_getter_url = '/station_avg_data/' + station_id;           
     const request1 = fetch(stations_data_getter_url).then(response => response.json())
     .then(data => {
         const jsonData1 = data;
-        stationDataProcessor(jsonData1, station_id);}
+        stationDataProcessor(jsonData1, station_id, stationStands);}
     )    
 }
 
 var charFlag = false;
 var dummyCounter = 0
 
-async function stationDataProcessor(jsonData, station_id){
+async function stationDataProcessor(jsonData, station_id, stationStands){
     dummyCounter ++; 
     let timeList = await jsonData.index
     let dailyAvgOccupancy = await jsonData.data
-    document.getElementById('graph1').innerHTML = '<canvas id="myDailyChart' + dummyCounter + '" style="width: 480px; height: 150px">Graph daily</canvas>';
+    document.getElementById('graph1').innerHTML = '<canvas id="myDailyChart' + dummyCounter + '" style="width: 480px; height: 200px">Graph daily</canvas>';
 
-    GraphDrawer();
+    GraphDrawer(stationStands);
 
-    async function GraphDrawer()
-    { const chartid = 'myDailyChart' + dummyCounter
-    const ctx = document.getElementById(chartid); 
+    // console.log({stationStands})
+    async function GraphDrawer(stationStands)
+    { 
+    
+    const chartid = 'myDailyChart' + dummyCounter
 
+    const ctx = document.getElementById(chartid).getContext("2d"); 
+    
+    const gradient = ctx.createLinearGradient(0, 0, 0, 200);
+        gradient.addColorStop(0, "rgba(216, 27, 96, 0.85)");   
+        gradient.addColorStop(1, "rgba(216, 27, 96, 0.10)");
+    
+    
+    
     DailyAvg = new Chart(ctx, {
     type: 'line',
     data: {
     labels: timeList,
     datasets: [{
         label: 'Average Daily Bike Availability At Station ' + station_id,
+        labelColor: '#fff',
         data: dailyAvgOccupancy,
         fill: true,
-        
-    }]
+        backgroundColor: gradient,
+        }]
     },
     options: {
         tension: 0.1,
+        
+       
     scales: {
+        x: {
+            ticks: {
+                color: "#fff"
+              },
+            
+        },
         y: {
-            min: 0
+            min: 0,
+            max: stationStands,
+            ticks: {
+                color: "#fff"
+              }
         }
     }
 }
@@ -337,7 +371,7 @@ async function stationDataProcessor(jsonData, station_id){
 }}
 
 //load a default station at the start
-stationAvgOccupancyGetter(1);
+stationAvgOccupancyGetter(1,31);
 
 
 

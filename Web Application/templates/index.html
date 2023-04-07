@@ -5,6 +5,11 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>dbbikes</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Rubik&display=swap" rel="stylesheet">
+
     <link rel="stylesheet" href="../static/styles.css" />
     <script src="https://kit.fontawesome.com/d4243df190.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -15,34 +20,39 @@
         <div id="map">Map</div>
             <div id="graph-parent">
                 <div id="graph1">
-                    <!-- <canvas id="myDailyChart" style="width: 480px; height: 150px">Graph daily</canvas> -->
-                </div>
-                <div id="graph2">
-                    <canvas id="myWeeklyChart" style="width: 480px; height: 150px">Graph Weekly</canvas>
                 </div>
             </div>
-        <div id="weather">Weather</div>
+        <div id="weather">
+            <div id="title"><i class="fa-solid fa-person-biking"></i> DBBikes</div>    
+            
+            <div id="weather-data">weather</div>
+        </div>
         <div id="location_input">
             <form name="location search" action="/search" method="post">
                 <input type="text" style="width: 300px;" class="autocomplete" id="starting_location" placeholder="Enter starting location or Click on a station..." onfocus = "startStationSelector()">
-                <label for="search starting location"><i class="fas fa-magnifying-glass"></i></label>
+                <label for="search starting location">
+                    <!-- <i class="fas fa-magnifying-glass"></i> -->
+                </label>
                 <br>
                 <br>
                 <input type="text" style="width: 300px;" class="autocomplete" id="destination_location" placeholder="Enter destination or Click on a station..." onfocus = "endStationSelector()">
-                <label for="search destination location"><i class="fas fa-magnifying-glass"></i></label>
+                <label for="search destination location">
+                    <!-- <i class="fas fa-magnifying-glass"></i> -->
+                </label>
             </form>
+
             <div id="travel-mode">
                 <input type="radio" name="mode" id="travel-mode-cycling" value="BICYCLING" checked="checked" >
-                <label for="travel-mode-cycling">Cycling</label>
+                <label for="travel-mode-cycling"><i class="fa-solid fa-person-biking"></i> </label>
 
                 <input type="radio" name="mode" id="travel-mode-walking" value="WALKING">
-                <label for="travel-mode-walking">Walking</label>
+                <label for="travel-mode-walking"><i class="fa-solid fa-person-walking"></i></label>
 
                 <input type="radio" name="mode" id="travel-mode-driving" value = "DRIVING">
-                <label for="travel-mode-driving">Driving</label>
+                <label for="travel-mode-driving"><i class="fa-solid fa-car"></i></label>
 
                 <input type="radio" name="mode" id="travel-mode-transport" value="TRANSIT">
-                <label for="travel-mode-transport">Public Transport</label>
+                <label for="travel-mode-transport"><i class="fa-solid fa-bus"></i></label>
             </div>
         </div>
     </div>

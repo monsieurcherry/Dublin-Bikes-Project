@@ -3,7 +3,6 @@ import sqlalchemy as sqla
 from sqlalchemy import create_engine
 import traceback
 import functools
-import config
 import pandas as pd
 from json import loads, dumps
 import simplejson as json
@@ -19,7 +18,7 @@ URI = "dbbikes.cfjfzkae45jy.eu-west-1.rds.amazonaws.com"
 PORT="3306"
 DB="dbbikes"
 USER="admin"
-PASSWORD = config.DB_PASSWORD
+PASSWORD = "mypassword"
 
 def connect_to_database():
     engine = create_engine("mysql+mysqlconnector://{}:{}@{}:{}/{}".format(USER, PASSWORD, URI, PORT, DB), echo=True)

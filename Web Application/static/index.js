@@ -16,15 +16,42 @@ function initMap()
 };
 window.initMap = initMap;
 
+let stations;
+let currentinfo;
+let whatToShowOnMarker = 'bike';
+function redrawMarker(input){
+    whatToShowOnMarker = input;
+    if (whatToShowOnMarker == 'bike'){
+        document.getElementById('marker-selector-parking').style.backgroundColor = 'white';
+        document.getElementById('marker-selector-parking').style.color = '#010030'
+        document.getElementById('marker-selector-bike').style.backgroundColor = '#010030';
+        document.getElementById('marker-selector-bike').style.color = 'white'
+    } else {
+        document.getElementById('marker-selector-parking').style.backgroundColor = '#010030';
+        document.getElementById('marker-selector-parking').style.color = 'white'
+        document.getElementById('marker-selector-bike').style.backgroundColor = 'white';
+        document.getElementById('marker-selector-bike').style.color = '#010030'
+
+    }
+
+
+    addMarkers(stations, currentinfo);
+}
+
 function addMarkers(stations, currentinfo) 
 {   
+    bikeMarkers.forEach(marker => {
+        marker.setMap(null)
+    });
     const infowindow = new google.maps.InfoWindow();
     stations.forEach(station=>{
 
         var availableBikes = '';
         var contentStr = '';
         var totalStand = '';
-    
+        var markerDisplay = '';
+        var markerNumColor = '';
+
         const blue_icon = "https://images2.imgbox.com/8b/64/Twifkt4W_o.png"
         const space = '&nbsp'
         currentinfo.forEach(stn=>{
@@ -47,6 +74,14 @@ function addMarkers(stations, currentinfo)
                 //else it is blue
             }});
 
+            if (whatToShowOnMarker == 'bike'){
+                markerDisplay = availableBikes
+            } else {markerDisplay = totalStand - availableBikes}
+
+            if (markerDisplay < 2){markerNumColor = "red"}
+            else if (markerDisplay < 6 && markerDisplay >= 2){markerNumColor = "orange"}
+            else {markerNumColor = "white"}
+
         const bike_marker = new google.maps.Marker({
             position: {
                 lat: station.position_lat,
@@ -55,7 +90,7 @@ function addMarkers(stations, currentinfo)
             map: map,
             title: station.name + ' Station No.  ' + station.number,
             //the marker display's each station's available bikes count
-            label: {text: availableBikes + '', color: "white"}, 
+            label: {text: markerDisplay + '', color: markerNumColor}, 
             icon: {url: blue_icon},
             opacity: 1,
         });
@@ -63,17 +98,14 @@ function addMarkers(stations, currentinfo)
         
         bike_marker.addListener("click", () => {
             let chosenDay = document.getElementById('pick-a-day').value;
-            console.log({chosenDay})
             stationNumber = parseInt(bike_marker.getTitle().slice(bike_marker.getTitle().length - 3, bike_marker.getTitle().length))
             if (chosenDay == 'avg'){stationAvgOccupancyGetter(stationNumber, totalStand)}
             else {predictiveModelResultGetter(stationNumber, parseInt(chosenDay), totalStand)}
-            console.log(chosenDay)
             if(startflag == true){
                 startingStationPosition = []
                 startingStationPosition.push(bike_marker.getPosition().lat())
                 startingStationPosition.push(bike_marker.getPosition().lng())
                 startingStationName = (bike_marker.getTitle())
-                // console.log({startingStationName})
                 routeMaker()
                 
             } else if (endflag == true) {
@@ -81,7 +113,6 @@ function addMarkers(stations, currentinfo)
                 endStationPosition.push(bike_marker.getPosition().lat())
                 endStationPosition.push(bike_marker.getPosition().lng())
                 endStationName = (bike_marker.getTitle())
-                // console.log({endStationName})
                 routeMaker()
             }
 
@@ -116,6 +147,9 @@ function addMarkers(stations, currentinfo)
     })
 };
 
+
+
+
 function fetchCurrentInfo() {
     const static_stations_info_url = '/stations';           //need to fetch the stations json
     const current_station_info_url = '/currentstations';    //then also need to fetch the current station information json
@@ -136,7 +170,9 @@ function fetchCurrentInfo() {
         const jsonData3 = data[2];
         const jsonData4 = data[4];
         // call add markers
-        addMarkers(jsonData1, jsonData2);
+        stations = jsonData1;
+        currentinfo = jsonData2;
+        addMarkers(stations, currentinfo);
         displayWeather(jsonData3)}
     );
 }
@@ -148,24 +184,24 @@ function getIconId(info) {
     return iconid
 }
 
+let todayAsWeekDay;
 function displayWeather(weather_json){
-
     weather_data = weather_json[0]
     const space = '&nbsp'
     const temperature = weather_data.temperature;
     const windSpeed = weather_data.windspeed;
-    // const cloudiness = weather_data.cloudiness;
-    // const description = weather_data.description;
+
     const updatedTime = weather_data.time;
-    
+    let today;
     weekDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
-    let today = 0;
+
     for (i = 0; i < 7; i++){
         if (weekDays[i] == updatedTime.slice(0,3)){
             today = i
         }
     }
-    
+    todayAsWeekDay = weekDays[today]
+
     document.getElementById('day-2').innerHTML = weekDays[(today+1)%7]
     document.getElementById('day-3').innerHTML = weekDays[(today+2)%7]
     document.getElementById('day-4').innerHTML = weekDays[(today+3)%7]
@@ -173,7 +209,7 @@ function displayWeather(weather_json){
 
     // const pressure = weather_data.pressure;
     var toBeShown = '<img src = "https://openweathermap.org/img/wn/' + iconid + '@2x.png">' +
-                '<div id = "weather-temperature"> ' + temperature + '°C </div>' + 
+                '<div id = "weather-temperature"> ' + temperature + '°C current </div>' + 
                 '<p id = "wind-speed"><i class="fas fa-wind"></i>' + space + windSpeed + 'm/s </p>'
     document.getElementById("weather-data").innerHTML = toBeShown;
 }
@@ -372,7 +408,7 @@ async function stationAvgOccupancyProcessor(jsonData, station_id, stationStands)
         },
         y: {
             min: 0,
-            max: stationStands,
+            max: stationStands ,
             ticks: {
                 color: "#fff"
               }
@@ -445,7 +481,7 @@ async function stationPredictedOccupancyProcessor(jsonData, station_id, stationS
         },
         y: {
             min: 0,
-            max: stationStands,
+            max: stationStands + 5,
             ticks: {
                 color: "#fff"
               }
@@ -458,5 +494,61 @@ async function stationPredictedOccupancyProcessor(jsonData, station_id, stationS
 
 
 
+function forecastGetter(){
+    const weather_forecast = 'https://api.openweathermap.org/data/2.5/forecast?lat=53.35&lon=-6.26&appid=b7d6a55bc0fff59fb0d5f7c3c1668417&units=metric';
+    const request = fetch(weather_forecast).then(response => response.json()).then(out => forecastStorer(out));
+}
 
+
+let forecast;
+async function forecastStorer(fore_cast_json){
+    forecast = await fore_cast_json
+}
+forecastGetter()
+
+const myHourSelection = document.getElementById('pick-an-hour');
+myHourSelection.addEventListener('change', function() {
+  displayForecastWeather(forecast, myDaySelection.value, myHourSelection.value)
+});
+
+const myDaySelection = document.getElementById('pick-a-day');
+myDaySelection.addEventListener('change', function() {
+    displayForecastWeather(forecast, myDaySelection.value, myHourSelection.value)
+});
+
+
+function displayForecastWeather(forecast, day, hour){
+    if (day == 'avg' && hour == 'none'){
+        fetchCurrentInfo()
+    }
+    else{
+    const space = '&nbsp'
+    forecastData = forecast.list
+    const currentDate = forecastData[0].dt_txt.slice(8,10);
+    const DayToChoose = parseInt(currentDate) + parseInt(day)
+    let selectedWeatherInfo;
+
+    forecastData.forEach(hourlyWeather => {
+        if(hourlyWeather.dt_txt.slice(8,10) == DayToChoose && 
+        hourlyWeather.dt_txt.slice(11,16)== hour){
+            selectedWeatherInfo = hourlyWeather
+        }
+    })
+    weekDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+    let today_index = 0;
+    for (let i = 0; i < weekDays.length; i++){
+        if (weekDays[i] == todayAsWeekDay){
+            today_index = i
+        }
+    }
+    const DayToDisplay = weekDays[today_index+parseInt(day)%7]
+    const iconID = selectedWeatherInfo.weather[0].icon;
+    const temperature = selectedWeatherInfo.main.temp;
+    const windSpeed = selectedWeatherInfo.wind.speed;
+
+    var toBeShown = '<img src = "https://openweathermap.org/img/wn/' + iconID + '@2x.png">' +
+                '<div id = "weather-temperature"> ' + temperature + '°C' + space + DayToDisplay + '</div>' + 
+                '<p id = "wind-speed"><i class="fas fa-wind"></i>' + space + windSpeed + 'm/s' + space + space + space + space + hour +  '</p>'
+    document.getElementById("weather-data").innerHTML = toBeShown;
+}}
 

@@ -276,7 +276,7 @@ function routeMaker(){
                     map,
                     title: startingPlace.name,
                     position: startingPlace.geometry.location,
-                    opacity: 1,
+                    opacity: 0,
                 })
         });
         map.setZoom(15)
@@ -301,7 +301,7 @@ function routeMaker(){
                     map,
                     title: destinationPlace.name,
                     position: destinationPlace.geometry.location,
-                    opacity: 1,
+                    opacity: 0,
                 })
         });
         map.setZoom(15)

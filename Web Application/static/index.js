@@ -78,8 +78,7 @@ function addMarkers(stations, currentinfo)
                 markerDisplay = availableBikes
             } else {markerDisplay = totalStand - availableBikes}
 
-            if (markerDisplay < 2){markerNumColor = "red"}
-            else if (markerDisplay < 6 && markerDisplay >= 2){markerNumColor = "orange"}
+            if (markerDisplay < 4){markerNumColor = "red"}
             else {markerNumColor = "white"}
 
         const bike_marker = new google.maps.Marker({

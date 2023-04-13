@@ -220,12 +220,16 @@ let directionsArray = [];
 
 function startStationSelector(){
     startflag = true
-    endflag = false    
+    endflag = false   
+    console.log({startflag})
+    console.log({endflag}) 
 }
 
 function endStationSelector(){
     endflag = true
     startflag = false    
+    console.log({startflag})
+    console.log({endflag}) 
 }
 
 function routeMaker(){
@@ -247,6 +251,8 @@ function routeMaker(){
         displayRouteAutofill(directionsService , directionsRenderer)
         console.log(directionsArray)
         endflag = false
+        // if(){}
+
     }
 
 

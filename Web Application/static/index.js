@@ -60,10 +60,10 @@ function addMarkers(stations, currentinfo)
                 totalStand = availableBikes + stn.available_bike_stands
                 var bike_icon;
                 var parking_icon;
-                if (stn.available_bikes == 0){bike_icon = "<i class='fas fa-person-biking' style = 'color:red'></i>"}
+                if (stn.available_bikes < 4){bike_icon = "<i class='fas fa-person-biking' style = 'color:red'></i>"}
                 else {bike_icon = "<i class='fas fa-person-biking' style = 'color:navy'></i>"};
 
-                if (stn.available_bike_stands == 0){parking_icon = "<i class='fas fa-square-parking' style = 'color:red'></i>"}
+                if (stn.available_bike_stands < 4){parking_icon = "<i class='fas fa-square-parking' style = 'color:red'></i>"}
                 else {parking_icon = "<i class='fas fa-square-parking' style = 'color:navy'></i>"};
 
                 contentStr += "<p style = 'color: #000'> Available bikes &nbsp &nbsp" + bike_icon + space + space + stn.available_bikes +
@@ -145,9 +145,6 @@ function addMarkers(stations, currentinfo)
         })}
     })
 };
-
-
-
 
 function fetchCurrentInfo() {
     const static_stations_info_url = '/stations';           //need to fetch the stations json
@@ -497,7 +494,6 @@ function forecastGetter(){
     const request = fetch(weather_forecast).then(response => response.json()).then(out => forecastStorer(out));
 }
 
-
 let forecast;
 async function forecastStorer(fore_cast_json){
     forecast = await fore_cast_json
@@ -513,7 +509,6 @@ const myDaySelection = document.getElementById('pick-a-day');
 myDaySelection.addEventListener('change', function() {
     displayForecastWeather(forecast, myDaySelection.value, myHourSelection.value)
 });
-
 
 function displayForecastWeather(forecast, day, hour){
     if (day == 'avg' && hour == 'none'){

@@ -3,7 +3,6 @@ import sqlalchemy as sqla
 from sqlalchemy import create_engine
 import traceback
 import functools
-import config
 import pandas as pd
 from json import loads, dumps
 import simplejson as json
@@ -85,7 +84,6 @@ def get_current_weather_info():
         return "error in current weather", 404
 
 df_global = None
-
 api_call = "https://api.openweathermap.org/data/2.5/forecast?lat=53.35&lon=-6.26&appid=b7d6a55bc0fff59fb0d5f7c3c1668417&units=metric"
 forecast_info = None 
 forecast_info_json = None
@@ -109,7 +107,6 @@ def DataGetter():
             return True
     except:
         print("Unable to get availability data for data analysis")
-
 
 def weather_forecast(days_from_today, hour):
     today = datetime.date.today()

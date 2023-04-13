@@ -426,7 +426,6 @@ function predictiveModelResultGetter(station_id, days_from_today, totalStands){
     const request1 = fetch(stations_data_ml).then(response => response.json())
     .then(data => {
         const jsonData1 = data;
-        console.log("Predictive model results data", jsonData1.index)
         stationPredictedOccupancyProcessor(jsonData1, station_id, totalStands);
     }
     )

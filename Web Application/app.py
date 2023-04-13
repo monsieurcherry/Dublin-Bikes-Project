@@ -239,7 +239,6 @@ def station_avg_data(station_id):
         return "error in station availability", 404
     
 
-
 @app.route("/")
 def render():
     return render_template('index.html')

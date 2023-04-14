@@ -194,6 +194,7 @@ form {
     background-color: #010030;
     border-radius: 5px;
     z-index: 10;
+    cursor: pointer;
 }
 
 #marker-selector-bike .fa-solid {
@@ -218,6 +219,7 @@ form {
     border-radius: 5px;
     padding-top: 1px;
     z-index: 10;
+    cursor: pointer;
 }
 
 #marker-selector-parking .fa-solid {
@@ -226,9 +228,9 @@ form {
     font-size: 20px;
 }
 
-#marker-selector-parking:hover, #marker-selector-bike:hover {
+/* #marker-selector-parking:hover, #marker-selector-bike:hover {
     background-color: white;
     color: #010030;
     cursor: pointer;
-}
+} */
 

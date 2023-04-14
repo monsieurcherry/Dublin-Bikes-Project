@@ -35,8 +35,8 @@ function redrawMarker(input){
     }
 
 
-    addMarkers(stations, currentinfo);
-    // fetchCurrentInfo();
+    // addMarkers(stations, currentinfo);
+    fetchCurrentInfo();
 }
 
 function addMarkers(stations, currentinfo) 

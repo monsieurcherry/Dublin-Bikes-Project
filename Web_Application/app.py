@@ -33,7 +33,10 @@ def get_db():
 def close_connection(exception):
     db = getattr(g, '_database', None)
     if db is not None:
-        db.close()
+        try:
+            db.close()
+        except:
+            print("no db.close")
 
 @app.route("/stations")
 @functools.lru_cache(maxsize=128)
@@ -241,4 +244,4 @@ def render():
     return render_template('index.html')
 
 if __name__ == "__main__":
-    app.run(debug=True, host = '0.0.0.0', port=5000)
+    app.run(debug=True, host = '0.0.0.0', port=8000)

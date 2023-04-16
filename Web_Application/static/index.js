@@ -541,7 +541,7 @@ function displayForecastWeather(forecast, day, hour){
             today_index = i
         }
     }
-    const DayToDisplay = weekDays[today_index+parseInt(day)%7]
+    const DayToDisplay = weekDays[(today_index + parseInt(day)) % 7]
     const iconID = selectedWeatherInfo.weather[0].icon;
     const temperature = selectedWeatherInfo.main.temp;
     const windSpeed = selectedWeatherInfo.wind.speed;

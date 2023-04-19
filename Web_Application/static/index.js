@@ -503,17 +503,20 @@ function forecastGetter(){
 let forecast;
 async function forecastStorer(fore_cast_json){
     forecast = await fore_cast_json
+    console.log(forecast)
 }
 forecastGetter()
 
 const myHourSelection = document.getElementById('pick-an-hour');
-myHourSelection.addEventListener('change', function() {
+myHourSelection.addEventListener("change", function() {
+    console.log("Hour changed")
   displayForecastWeather(forecast, myDaySelection.value, myHourSelection.value)
 });
 
 const myDaySelection = document.getElementById('pick-a-day');
-myDaySelection.addEventListener('change', function() {
-    displayForecastWeather(forecast, myDaySelection.value, myHourSelection.value)
+myDaySelection.addEventListener("change", function() {
+    displayForecastWeather(forecast, myDaySelection.value, myHourSelection.value);
+    console.log({myDaySelection})
 });
 
 function displayForecastWeather(forecast, day, hour){

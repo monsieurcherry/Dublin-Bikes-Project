@@ -384,7 +384,7 @@ async function stationAvgOccupancyProcessor(jsonData, station_id, stationStands)
     data: {
     labels: timeList,
     datasets: [{
-        label: 'Average Daily Bike Availability At Station ' + station_id,
+        label: 'Weekly Average Daily Bike Availability At Station ' + station_id,
         labelColor: '#fff',
         data: dailyAvgOccupancy,
         fill: true,
@@ -439,6 +439,7 @@ async function stationPredictedOccupancyProcessor(jsonData, station_id, stationS
         timeList[i] = i
         dailyAvgOccupancy[i] = jsonData[i]
     }
+
 
     console.log("timelist: ", timeList);
     console.log("dailyavgoccupancy: ", dailyAvgOccupancy)

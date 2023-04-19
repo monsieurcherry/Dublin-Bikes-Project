@@ -176,9 +176,9 @@ def predict_for_future_date(station_id, days_from_today, hour):
        'description_light intensity shower rain', 'description_light rain',
        'description_light snow', 'description_mist',
        'description_moderate rain', 'description_overcast clouds',
-       'description_scattered clouds', 'description_shower rain',
-       'description_sleet', 'description_snow', 'is_busy_hours',
-       'cold_weather', 'windy_weather']
+       'description_ragged shower rain', 'description_scattered clouds',
+       'description_shower rain', 'description_sleet', 'description_snow',
+       'is_busy_hours', 'cold_weather', 'windy_weather']
     X = pd.DataFrame(columns = A)
 
     # Make sure the input DataFrame has the same columns as the training data
@@ -204,26 +204,18 @@ def predict_for_future_date(station_id, days_from_today, hour):
 @functools.lru_cache(maxsize=128)
 def predicted_station_occupancy(station_id, days_from_today):
     no_of_bikes = {}
-    # index = []
-    # data = []
     for i in range(24):
-        # index.append(i)
         mydata = predict_for_future_date(station_id, days_from_today, i)
         no_of_bikes[i] = mydata[0]
-        # data.append(mydata[0])
-
-    # no_of_bikes["index"] = index
-    # no_of_bikes["data"] = data
     return no_of_bikes
 
 @app.route("/station_avg_data/<int:station_id>")
 @functools.lru_cache(maxsize=128)
 def station_avg_data(station_id):
-    # global df_global
     engine = get_db()
     try:
         with engine.connect() as connection:
-            df = pd.read_sql_query(f"select * from availability where number = {station_id} limit 5000;", connection)
+            df = pd.read_sql_query(f"select * from availability where number = {station_id} limit 2016;", connection)
             print("df head: ", df.head)
             connection.close()
             print(df.head())
@@ -239,7 +231,6 @@ def station_avg_data(station_id):
         print(traceback.format_exc())
         return "error in station availability", 404
     
-
 @app.route("/")
 def render():
     return render_template('index.html')

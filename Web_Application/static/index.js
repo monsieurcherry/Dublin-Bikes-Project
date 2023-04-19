@@ -252,7 +252,6 @@ function routeMaker(){
         displayRouteAutofill(directionsService , directionsRenderer)
         console.log(directionsArray)
         endflag = false
-        // if(){}
 
     }
 

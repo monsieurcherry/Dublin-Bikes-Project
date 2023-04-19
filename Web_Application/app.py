@@ -86,7 +86,7 @@ def get_current_weather_info():
         print(traceback.format_exc())
         return "error in current weather", 404
 
-df_global = None
+# df_global = None
 api_call = "https://api.openweathermap.org/data/2.5/forecast?lat=53.35&lon=-6.26&appid=b7d6a55bc0fff59fb0d5f7c3c1668417&units=metric"
 forecast_info = None 
 forecast_info_json = None
@@ -97,9 +97,9 @@ def DataGetter():
     engine = get_db()
     try:
         with engine.connect() as connection:
-            global df_global
-            df_global = pd.read_sql_table("availability", connection)
-            print(df_global.head)
+            # global df_global
+            # df_global = pd.read_sql_query("select * from availability order by last_update desc limit 1000", connection)
+            # print(df_global.head)
 
             global forecast_info
             forecast_info = requests.get(api_call)
@@ -220,20 +220,22 @@ def expected_station_occupancy(station_id, days_from_today):
 @app.route("/station_avg_data/<int:station_id>")
 @functools.lru_cache(maxsize=128)
 def station_avg_data(station_id):
-    global df_global
-    df = df_global
+    # global df_global
+    engine = get_db()
     try:
-        print(df.head())
-        df = df[df['number'] == station_id]
-        df = df.drop_duplicates(keep='first')
-        df['last_update'] = pd.to_datetime(df['last_update'])
-        df = df.set_index('last_update')
-        df = df.resample('10T').mean()
-        df = df.groupby(df.index.hour).mean()
-        result = df['available_bikes'].to_json(orient="split")
-        parsed = loads(result)
-        return dumps(parsed, indent=4)
-
+        with engine.connect() as connection:
+            df = pd.read_sql_query(f"select * from availability where number = {station_id} order by last_update desc limit 1000", connection)
+            print(df.head)
+            connection.close()
+            print(df.head())
+            df = df.drop_duplicates(keep='first')
+            df['last_update'] = pd.to_datetime(df['last_update'])
+            df = df.set_index('last_update')
+            df = df.resample('10T').mean()
+            df = df.groupby(df.index.hour).mean()
+            result = df['available_bikes'].to_json(orient="split")
+            parsed = loads(result)
+            return dumps(parsed, indent=4)
     except:
         print(traceback.format_exc())
         return "error in station availability", 404
@@ -244,4 +246,4 @@ def render():
     return render_template('index.html')
 
 if __name__ == "__main__":
-    app.run(debug=True, host = '0.0.0.0', port=8000)
+    app.run(debug=True, host = '0.0.0.0', port=8000, threaded = True)

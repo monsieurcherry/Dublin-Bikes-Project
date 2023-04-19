@@ -20,7 +20,7 @@ USER="admin"
 PASSWORD = "mypassword"
 
 def connect_to_database():
-    engine = create_engine("mysql+mysqldb://{}:{}@{}:{}/{}".format(USER, PASSWORD, URI, PORT, DB), echo=True)
+    engine = create_engine("mysql+mysqlconnector://{}:{}@{}:{}/{}".format(USER, PASSWORD, URI, PORT, DB), echo=True)
     return engine
 
 def get_db():
@@ -111,6 +111,9 @@ def DataGetter():
     except:
         print("Unable to get availability data for data analysis")
 
+
+@app.route("/weather_forecast/<int:days_from_today>&<int:hour>")
+@functools.lru_cache(maxsize=128)
 def weather_forecast(days_from_today, hour):
     today = datetime.date.today()
     date_time = datetime.datetime(today.year, today.month, today.day + days_from_today, hour)
@@ -136,6 +139,9 @@ def weather_forecast(days_from_today, hour):
     future_weather_data = pd.get_dummies(future_weather_data, columns=['description'])
     return future_weather_data
 
+
+@app.route("/predict_for_future_date/<int:station_id>&<int:days_from_today>&<int:hour>")
+@functools.lru_cache(maxsize=128)
 def predict_for_future_date(station_id, days_from_today, hour):
     # Load the model
     with open(f"predictive_model/model_{station_id}.pkl", "rb") as handle:
@@ -200,19 +206,22 @@ def predict_for_future_date(station_id, days_from_today, hour):
 
     # Ensure available_bike_stands is greater than 0 and less than or equal to 114
     available_bike_stands = max(0, available_bike_stands)
-    return int(available_bikes), int(available_bike_stands)
+    return [int(available_bikes), int(available_bike_stands)]
 
 @app.route("/predicted_occupancy/<int:station_id>&<int:days_from_today>")
 @functools.lru_cache(maxsize=128)
-def expected_station_occupancy(station_id, days_from_today):
+def predicted_station_occupancy(station_id, days_from_today):
     no_of_bikes = {}
     #index and data
     index = []
     data = []
     for i in range(24):
         index.append(i)
-        mydata = predict_for_future_date(station_id, days_from_today, i)
-        data.append(mydata[0])
+        try:
+            mydata = predict_for_future_date(station_id, days_from_today, i)
+            data.append(mydata[0])
+        except:
+            return "can't get predict_for_future"
     no_of_bikes["index"] = index
     no_of_bikes["data"] = data
     return no_of_bikes

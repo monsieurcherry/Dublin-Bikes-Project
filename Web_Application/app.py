@@ -97,10 +97,6 @@ def DataGetter():
     engine = get_db()
     try:
         with engine.connect() as connection:
-            # global df_global
-            # df_global = pd.read_sql_query("select * from availability order by last_update desc limit 1000", connection)
-            # print(df_global.head)
-
             global forecast_info
             forecast_info = requests.get(api_call)
             global forecast_info_json
@@ -112,8 +108,6 @@ def DataGetter():
         print("Unable to get availability data for data analysis")
 
 
-@app.route("/weather_forecast/<int:days_from_today>&<int:hour>")
-@functools.lru_cache(maxsize=128)
 def weather_forecast(days_from_today, hour):
     today = datetime.date.today()
     date_time = datetime.datetime(today.year, today.month, today.day + days_from_today, hour)
@@ -140,8 +134,6 @@ def weather_forecast(days_from_today, hour):
     return future_weather_data
 
 
-@app.route("/predict_for_future_date/<int:station_id>&<int:days_from_today>&<int:hour>")
-@functools.lru_cache(maxsize=128)
 def predict_for_future_date(station_id, days_from_today, hour):
     # Load the model
     with open(f"predictive_model/model_{station_id}.pkl", "rb") as handle:
@@ -212,18 +204,16 @@ def predict_for_future_date(station_id, days_from_today, hour):
 @functools.lru_cache(maxsize=128)
 def predicted_station_occupancy(station_id, days_from_today):
     no_of_bikes = {}
-    #index and data
-    index = []
-    data = []
+    # index = []
+    # data = []
     for i in range(24):
-        index.append(i)
-        try:
-            mydata = predict_for_future_date(station_id, days_from_today, i)
-            data.append(mydata[0])
-        except:
-            return "can't get predict_for_future"
-    no_of_bikes["index"] = index
-    no_of_bikes["data"] = data
+        # index.append(i)
+        mydata = predict_for_future_date(station_id, days_from_today, i)
+        no_of_bikes[i] = mydata[0]
+        # data.append(mydata[0])
+
+    # no_of_bikes["index"] = index
+    # no_of_bikes["data"] = data
     return no_of_bikes
 
 @app.route("/station_avg_data/<int:station_id>")
@@ -233,7 +223,7 @@ def station_avg_data(station_id):
     engine = get_db()
     try:
         with engine.connect() as connection:
-            df = pd.read_sql_query(f"select * from availability where number = {station_id}", connection)
+            df = pd.read_sql_query(f"select * from availability where number = {station_id} limit 5000;", connection)
             print("df head: ", df.head)
             connection.close()
             print(df.head())

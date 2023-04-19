@@ -418,7 +418,7 @@ async function stationAvgOccupancyProcessor(jsonData, station_id, stationStands)
 //load a default station at the start
 stationAvgOccupancyGetter(1,31);
 
-function predictiveModelResultGetter(station_id, days_from_today, totalStands){
+async function predictiveModelResultGetter(station_id, days_from_today, totalStands){
     const stations_data_ml = '/predicted_occupancy/' + station_id + '&' + days_from_today;        
     const request1 = fetch(stations_data_ml).then(response => response.json())
     .then(data => {
@@ -432,8 +432,18 @@ function predictiveModelResultGetter(station_id, days_from_today, totalStands){
 let dummyCounter2 = 0;
 async function stationPredictedOccupancyProcessor(jsonData, station_id, stationStands){
     dummyCounter2 ++; 
-    let timeList = await jsonData.index
-    let dailyAvgOccupancy = await jsonData.data
+    
+    const timeList = []
+    const dailyAvgOccupancy = []
+    for (i = 0; i<24; i++){
+        timeList[i] = i
+        dailyAvgOccupancy[i] = jsonData[i]
+    }
+
+    console.log("timelist: ", timeList);
+    console.log("dailyavgoccupancy: ", dailyAvgOccupancy)
+    // let timeList = await jsonData.index
+    // let dailyAvgOccupancy = await jsonData.data
     document.getElementById('graph1').innerHTML = '<canvas id="myDailyChart' + dummyCounter + '" style="width: 100%; height: 100%">Graph daily</canvas>';
 
     GraphDrawer(stationStands);

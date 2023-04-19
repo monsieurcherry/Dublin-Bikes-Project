@@ -222,15 +222,11 @@ let directionsArray = [];
 function startStationSelector(){
     startflag = true
     endflag = false   
-    console.log({startflag})
-    console.log({endflag}) 
 }
 
 function endStationSelector(){
     endflag = true
     startflag = false    
-    console.log({startflag})
-    console.log({endflag}) 
 }
 
 function routeMaker(){
@@ -250,7 +246,6 @@ function routeMaker(){
     if(endflag == true){
         document.getElementById("destination_location").value = endStationName;
         displayRouteAutofill(directionsService , directionsRenderer)
-        console.log(directionsArray)
         endflag = false
 
     }
@@ -288,7 +283,6 @@ function routeMaker(){
     })
 
     end_searchItem.addListener("places_changed", ()=> {
-        console.log({end_searchItem})
         const destinationPlace = end_searchItem.getPlaces();
         
         if(destinationPlace.length == 0){
@@ -503,20 +497,17 @@ function forecastGetter(){
 let forecast;
 async function forecastStorer(fore_cast_json){
     forecast = await fore_cast_json
-    console.log(forecast)
 }
 forecastGetter()
 
 const myHourSelection = document.getElementById('pick-an-hour');
 myHourSelection.addEventListener("change", function() {
-    console.log("Hour changed")
   displayForecastWeather(forecast, myDaySelection.value, myHourSelection.value)
 });
 
 const myDaySelection = document.getElementById('pick-a-day');
 myDaySelection.addEventListener("change", function() {
     displayForecastWeather(forecast, myDaySelection.value, myHourSelection.value);
-    console.log({myDaySelection})
 });
 
 function displayForecastWeather(forecast, day, hour){

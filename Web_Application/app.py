@@ -20,7 +20,7 @@ USER="admin"
 PASSWORD = "mypassword"
 
 def connect_to_database():
-    engine = create_engine("mysql+mysqlconnector://{}:{}@{}:{}/{}".format(USER, PASSWORD, URI, PORT, DB), echo=True)
+    engine = create_engine("mysql+mysqldb://{}:{}@{}:{}/{}".format(USER, PASSWORD, URI, PORT, DB), echo=True)
     return engine
 
 def get_db():
@@ -246,4 +246,4 @@ def render():
     return render_template('index.html')
 
 if __name__ == "__main__":
-    app.run(debug=True, host = '0.0.0.0', port=8000, threaded = True)
+    app.run(debug=True, threaded = True)

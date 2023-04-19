@@ -224,8 +224,8 @@ def station_avg_data(station_id):
     engine = get_db()
     try:
         with engine.connect() as connection:
-            df = pd.read_sql_query(f"select * from availability where number = {station_id} order by last_update desc limit 1000", connection)
-            print(df.head)
+            df = pd.read_sql_query(f"select * from availability where number = {station_id}", connection)
+            print("df head: ", df.head)
             connection.close()
             print(df.head())
             df = df.drop_duplicates(keep='first')

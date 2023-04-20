@@ -185,8 +185,12 @@ let todayAsWeekDay;
 function displayWeather(weather_json){
     weather_data = weather_json[0]
     const space = '&nbsp'
-    const temperature = weather_data.temperature;
-    const windSpeed = weather_data.windspeed;
+    const temperature = Math.round(weather_data.temperature);
+    const windSpeed = Math.round(weather_data.windspeed * 10) / 10;
+    var windIconColor;
+    if (windSpeed > 10 && windSpeed < 17){ windIconColor = 'orange'
+    } else if (windSpeed >= 17) {windIconColor = 'red'} else {windIconColor = 'white'}
+
 
     const updatedTime = weather_data.time;
     let today;
@@ -207,7 +211,7 @@ function displayWeather(weather_json){
     // const pressure = weather_data.pressure;
     var toBeShown = '<img src = "https://openweathermap.org/img/wn/' + iconid + '@2x.png">' +
                 '<div id = "weather-temperature"> ' + temperature + '°C current </div>' + 
-                '<p id = "wind-speed"><i class="fas fa-wind"></i>' + space + windSpeed + 'm/s </p>'
+                '<p id = "wind-speed"><i class="fas fa-wind" style = "color:' + windIconColor + '"></i>' + space + windSpeed + 'm/s </p>'
     document.getElementById("weather-data").innerHTML = toBeShown;
 }
 
@@ -547,12 +551,15 @@ function displayForecastWeather(forecast, day, hour){
     }
     const DayToDisplay = weekDays[(today_index + parseInt(day)) % 7]
     const iconID = selectedWeatherInfo.weather[0].icon;
-    const temperature = selectedWeatherInfo.main.temp;
-    const windSpeed = selectedWeatherInfo.wind.speed;
+    const temperature = Math.round(selectedWeatherInfo.main.temp);
+    const windSpeed = Math.round(selectedWeatherInfo.wind.speed * 10) / 10;
+    var windIconColor;
+    if (windSpeed > 10 && windSpeed < 17){ windIconColor = 'orange'
+    } else if (windSpeed >= 17) {windIconColor = 'red'} else {windIconColor = 'white'}
 
     var toBeShown = '<img src = "https://openweathermap.org/img/wn/' + iconID + '@2x.png">' +
                 '<div id = "weather-temperature"> ' + temperature + '°C' + space + DayToDisplay + '</div>' + 
-                '<p id = "wind-speed"><i class="fas fa-wind"></i>' + space + windSpeed + 'm/s' + space + space + space + space + hour +  '</p>'
+                '<p id = "wind-speed"><i class="fas fa-wind" style = "color:' + windIconColor+ '"></i>' + space + windSpeed + 'm/s' + space + space + space + space + hour +  '</p>'
     document.getElementById("weather-data").innerHTML = toBeShown;
 }}
 

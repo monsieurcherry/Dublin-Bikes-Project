@@ -20,7 +20,7 @@ USER="admin"
 PASSWORD = "mypassword"
 
 def connect_to_database():
-    engine = create_engine("mysql+mysqlconnector://{}:{}@{}:{}/{}".format(USER, PASSWORD, URI, PORT, DB), echo=True)
+    engine = create_engine("mysql+mysqldb://{}:{}@{}:{}/{}".format(USER, PASSWORD, URI, PORT, DB), echo=True)
     return engine
 
 def get_db():
@@ -95,7 +95,6 @@ forecast_info_json = None
 @app.before_first_request
 def DataGetter():
     engine = get_db()
-    predicted_station_occupancy(42, 1)
     try:
         with engine.connect() as connection:
             global forecast_info
@@ -104,6 +103,7 @@ def DataGetter():
             forecast_info_json = json.loads(forecast_info.text)
 
             connection.close()
+            predicted_station_occupancy(42, 1)
             return True
     except:
         print("Unable to get availability data for data analysis")
@@ -137,7 +137,7 @@ def weather_forecast(days_from_today, hour):
 
 def predict_for_future_date(station_id, days_from_today, hour):
     # Load the model
-    with open(f"predictive_model/model_{station_id}.pkl", "rb") as handle:
+    with open("/Users/itgel98/Desktop/Masters Semester 2/COMP30830 Software Engineering/Group Project/Software-Engineering-Project/predictive_model/model_{}.pkl".format(station_id), "rb") as handle:
         model = pickle.load(handle)
 
     # Get future weather data
@@ -238,4 +238,4 @@ def render():
     return render_template('index.html')
 
 if __name__ == "__main__":
-    app.run(debug=True, threaded = True)
+    app.run(debug=True, port = 5100)

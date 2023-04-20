@@ -95,6 +95,7 @@ forecast_info_json = None
 @app.before_first_request
 def DataGetter():
     engine = get_db()
+    predicted_station_occupancy(42, 1)
     try:
         with engine.connect() as connection:
             global forecast_info
@@ -207,6 +208,7 @@ def predicted_station_occupancy(station_id, days_from_today):
     for i in range(24):
         mydata = predict_for_future_date(station_id, days_from_today, i)
         no_of_bikes[i] = mydata[0]
+    print("Predicted occupancy ran")
     return no_of_bikes
 
 @app.route("/station_avg_data/<int:station_id>")

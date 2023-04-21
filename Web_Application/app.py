@@ -20,7 +20,7 @@ USER="admin"
 PASSWORD = "mypassword"
 
 def connect_to_database():
-    engine = create_engine("mysql+mysqldb://{}:{}@{}:{}/{}".format(USER, PASSWORD, URI, PORT, DB), echo=True)
+    engine = create_engine("mysql+mysqlconnector://{}:{}@{}:{}/{}".format(USER, PASSWORD, URI, PORT, DB), echo=True)
     return engine
 
 def get_db():
@@ -86,30 +86,19 @@ def get_current_weather_info():
         print(traceback.format_exc())
         return "error in current weather", 404
 
-# df_global = None
 api_call = "https://api.openweathermap.org/data/2.5/forecast?lat=53.35&lon=-6.26&appid=b7d6a55bc0fff59fb0d5f7c3c1668417&units=metric"
-forecast_info = None 
-forecast_info_json = None
-
-
-@app.before_first_request
-def DataGetter():
-    engine = get_db()
-    try:
-        with engine.connect() as connection:
-            global forecast_info
-            forecast_info = requests.get(api_call)
-            global forecast_info_json
-            forecast_info_json = json.loads(forecast_info.text)
-
-            connection.close()
-            predicted_station_occupancy(42, 1)
-            return True
-    except:
-        print("Unable to get availability data for data analysis")
 
 
 def weather_forecast(days_from_today, hour):
+    engine = get_db()
+    try:
+        with engine.connect() as connection:
+            forecast_info = requests.get(api_call)
+            forecast_info_json = json.loads(forecast_info.text)
+            connection.close()
+    except:
+        print("Unable to get availability data for data analysis")
+
     today = datetime.date.today()
     date_time = datetime.datetime(today.year, today.month, today.day + days_from_today, hour)
     time_unix_timestamp = int(time.mktime(date_time.timetuple()))
@@ -139,6 +128,7 @@ def predict_for_future_date(station_id, days_from_today, hour):
     # Load the model
     with open("/Users/itgel98/Desktop/Masters Semester 2/COMP30830 Software Engineering/Group Project/Software-Engineering-Project/predictive_model/model_{}.pkl".format(station_id), "rb") as handle:
         model = pickle.load(handle)
+
 
     # Get future weather data
     future_weather_data = weather_forecast(days_from_today, hour)
@@ -181,6 +171,7 @@ def predict_for_future_date(station_id, days_from_today, hour):
        'description_shower rain', 'description_sleet', 'description_snow',
        'is_busy_hours', 'cold_weather', 'windy_weather']
     X = pd.DataFrame(columns = A)
+
 
     # Make sure the input DataFrame has the same columns as the training data
     for col in X.columns:
